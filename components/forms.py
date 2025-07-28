@@ -5,12 +5,15 @@ from utils.database import insert_coordinator, insert_verifier, insert_warehouse
 
 def coordinator_form():
     st.subheader('Alta de Coordinador')
-    name = st.text_input('Nombre')
-    surnames = st.text_input('Apellidos')
+    name = st.text_input('Nombre', key='coord_name')
+    surnames = st.text_input('Apellidos', key='coord_surnames')
     if st.button('Guardar Coordinador'):
         if name and surnames:
             insert_coordinator(name, surnames)
             st.success('Coordinador guardado exitosamente.')
+            st.session_state['coord_name'] = ''
+            st.session_state['coord_surnames'] = ''
+            st.rerun()
         else:
             st.error('Por favor, complete todos los campos.')
 
