@@ -5,28 +5,42 @@ from utils.database import insert_coordinator, insert_verifier, insert_warehouse
 
 def coordinator_form():
     st.subheader('Alta de Coordinador')
-    name = st.text_input('Nombre', key='coord_name')
-    surnames = st.text_input('Apellidos', key='coord_surnames')
+    
+    # Inicializar contador si no existe
+    if 'coord_form_counter' not in st.session_state:
+        st.session_state.coord_form_counter = 0
+    
+    # Usar el contador en las claves para forzar la recreación de widgets
+    name = st.text_input('Nombre', key=f'coord_name_{st.session_state.coord_form_counter}')
+    surnames = st.text_input('Apellidos', key=f'coord_surnames_{st.session_state.coord_form_counter}')
+    
     if st.button('Guardar Coordinador'):
         if name and surnames:
             insert_coordinator(name, surnames)
             st.success('Coordinador guardado exitosamente.')
-            st.session_state['coord_name'] = ''
-            st.session_state['coord_surnames'] = ''
+            # Incrementar contador para limpiar formulario
+            st.session_state.coord_form_counter += 1
             st.rerun()
         else:
             st.error('Por favor, complete todos los campos.')
 
 def verifier_form():
     st.subheader('Alta de Verificador')
-    name = st.text_input('Nombre')
-    surnames = st.text_input('Apellidos')
-    phone = st.text_input('Teléfono')
-    zone = st.text_input('Zona')
+    
+    if 'verif_form_counter' not in st.session_state:
+        st.session_state.verif_form_counter = 0
+    
+    name = st.text_input('Nombre', key=f'verif_name_{st.session_state.verif_form_counter}')
+    surnames = st.text_input('Apellidos', key=f'verif_surnames_{st.session_state.verif_form_counter}')
+    phone = st.text_input('Teléfono', key=f'verif_phone_{st.session_state.verif_form_counter}')
+    zone = st.text_input('Zona', key=f'verif_zone_{st.session_state.verif_form_counter}')
+    
     if st.button('Guardar Verificador'):
         if name and surnames:
             insert_verifier(name, surnames, phone, zone)
             st.success('Verificador guardado exitosamente.')
+            st.session_state.verif_form_counter += 1
+            st.rerun()
         else:
             st.error('Por favor, complete nombre y apellidos.')
 
@@ -119,6 +133,6 @@ def manage_incident_actions_form():
         if action_date and action_description and performed_by:
             insert_incident_action(incident_record_id, action_date, action_description, new_status, performed_by)
             st.success('Acción guardada exitosamente.')
-            st.experimental_rerun()
+            st.rerun()  # Cambiado de st.experimental_rerun()
         else:
             st.error('Por favor, complete fecha, descripción y realizado por.')
