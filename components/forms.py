@@ -113,26 +113,33 @@ def incident_record_form():
 
 def manage_incident_actions_form():
     st.subheader('Gestión de Acciones de Incidencia')
+    
+    # Inicializar contador si no existe
+    if 'incident_actions_counter' not in st.session_state:
+        st.session_state.incident_actions_counter = 0
+    
     incident_records = get_incident_records()
     if not incident_records:
         st.warning('No hay registros de incidencias disponibles. Por favor, registre uno primero.')
         return
-    selected_record = st.selectbox('Seleccionar Registro de Incidencia', options=incident_records, format_func=lambda x: x[1])
+    selected_record = st.selectbox('Seleccionar Registro de Incidencia', options=incident_records, format_func=lambda x: x[1], key=f'inc_act_record_{st.session_state.incident_actions_counter}')
     incident_record_id = selected_record[0]
     actions = get_incident_actions(incident_record_id)
     st.subheader('Historial de Acciones')
     for action in actions:
         st.write(f"Fecha: {action['action_date']}, Descripción: {action['action_description']}, Nuevo Status: {action['new_status'] or 'N/A'}, Realizado por: {action['performed_by']}")
     st.subheader('Añadir Nueva Acción')
-    action_date = st.date_input('Fecha de la Acción', datetime.date.today())
-    action_description = st.text_area('Descripción de la Acción')
-    new_status = st.selectbox('Nuevo Status (opcional)', [None, 'Pendiente', 'En Proceso', 'Solucionado', 'Asignado a Técnicos'], index=0)
+    action_date = st.date_input('Fecha de la Acción', datetime.date.today(), key=f'inc_act_date_{st.session_state.incident_actions_counter}')
+    action_description = st.text_area('Descripción de la Acción', key=f'inc_act_desc_{st.session_state.incident_actions_counter}')
+    new_status = st.selectbox('Nuevo Status (opcional)', [None, 'Pendiente', 'En Proceso', 'Solucionado', 'Asignado a Técnicos'], index=0, key=f'inc_act_status_{st.session_state.incident_actions_counter}')
     coordinators = get_coordinators()
-    performed_by = st.selectbox('Realizado por', options=coordinators, format_func=lambda x: x[1])[0]
+    performed_by = st.selectbox('Realizado por', options=coordinators, format_func=lambda x: x[1], key=f'inc_act_by_{st.session_state.incident_actions_counter}')[0]
     if st.button('Guardar Acción'):
         if action_date and action_description and performed_by:
             insert_incident_action(incident_record_id, action_date, action_description, new_status, performed_by)
             st.success('Acción guardada exitosamente.')
-            st.rerun()  # Cambiado de st.experimental_rerun()
+            # Incrementar contador para limpiar formulario
+            st.session_state.incident_actions_counter += 1
+            st.rerun()
         else:
             st.error('Por favor, complete fecha, descripción y realizado por.')
