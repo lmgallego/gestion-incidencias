@@ -46,13 +46,21 @@ def verifier_form():
 
 def warehouse_form():
     st.subheader('Alta de Bodega')
-    name = st.text_input('Nombre')
-    nif = st.text_input('NIF')
-    zone = st.text_input('Zona')
+    
+    # Inicializar contador si no existe
+    if 'warehouse_form_counter' not in st.session_state:
+        st.session_state.warehouse_form_counter = 0
+    
+    name = st.text_input('Nombre', key=f'wh_name_{st.session_state.warehouse_form_counter}')
+    nif = st.text_input('NIF', key=f'wh_nif_{st.session_state.warehouse_form_counter}')
+    zone = st.text_input('Zona', key=f'wh_zone_{st.session_state.warehouse_form_counter}')
     if st.button('Guardar Bodega'):
         if name and nif:
             insert_warehouse(name, nif, zone)
             st.success('Bodega guardada exitosamente.')
+            # Incrementar contador para limpiar formulario
+            st.session_state.warehouse_form_counter += 1
+            st.rerun()
         else:
             st.error('Por favor, complete nombre y NIF.')
 
@@ -69,45 +77,61 @@ def csv_upload(section):
 
 def incident_form():
     st.subheader('Alta de Incidencia')
-    description = st.text_area('Descripción de la Incidencia')
+    
+    # Inicializar contador si no existe
+    if 'incident_form_counter' not in st.session_state:
+        st.session_state.incident_form_counter = 0
+    
+    description = st.text_area('Descripción de la Incidencia', key=f'inc_description_{st.session_state.incident_form_counter}')
     if st.button('Guardar Incidencia'):
         if description:
             insert_incident(description)
             st.success('Incidencia guardada exitosamente.')
+            # Incrementar contador para limpiar formulario
+            st.session_state.incident_form_counter += 1
+            st.rerun()
         else:
             st.error('Por favor, ingrese una descripción.')
 
 def incident_record_form():
     st.subheader('Registro de Incidencia')
-    date = st.date_input('Fecha', datetime.date.today())
+    
+    # Inicializar contador si no existe
+    if 'incident_record_counter' not in st.session_state:
+        st.session_state.incident_record_counter = 0
+    
+    date = st.date_input('Fecha', datetime.date.today(), key=f'inc_rec_date_{st.session_state.incident_record_counter}')
     coordinators = get_coordinators()
     if not coordinators:
         st.warning('No hay coordinadores disponibles. Por favor, registre uno primero.')
         return
-    registering_coordinator_id = st.selectbox('Coordinador que registra', options=coordinators, format_func=lambda x: x[1])[0]
+    registering_coordinator_id = st.selectbox('Coordinador que registra', options=coordinators, format_func=lambda x: x[1], key=f'inc_rec_reg_coord_{st.session_state.incident_record_counter}')[0]
     warehouses = get_warehouses()
     if not warehouses:
         st.warning('No hay bodegas disponibles. Por favor, registre una primero.')
         return
-    warehouse_id = st.selectbox('Bodega', options=warehouses, format_func=lambda x: x[1])[0]
+    warehouse_id = st.selectbox('Bodega', options=warehouses, format_func=lambda x: x[1], key=f'inc_rec_warehouse_{st.session_state.incident_record_counter}')[0]
     verifiers = get_verifiers()
     if not verifiers:
         st.warning('No hay verificadores disponibles. Por favor, registre uno primero.')
         return
-    causing_verifier_id = st.selectbox('Verificador que provocó la incidencia', options=verifiers, format_func=lambda x: x[1])[0]
+    causing_verifier_id = st.selectbox('Verificador que provocó la incidencia', options=verifiers, format_func=lambda x: x[1], key=f'inc_rec_verifier_{st.session_state.incident_record_counter}')[0]
     incidents = get_incidents()
     if not incidents:
         st.warning('No hay incidencias disponibles. Por favor, registre una primero.')
         return
-    incident_id = st.selectbox('Incidencia', options=incidents, format_func=lambda x: x[1])[0]
-    assigned_coordinator_id = st.selectbox('Coordinador asignado', options=coordinators, format_func=lambda x: x[1])[0]
-    explanation = st.text_area('Explicación')
-    status = st.selectbox('Status', ['Pendiente', 'En Proceso', 'Solucionado', 'Asignado a Técnicos'])
-    responsible = st.selectbox('Responsable', ['Bodega', 'Verificador'])
+    incident_id = st.selectbox('Incidencia', options=incidents, format_func=lambda x: x[1], key=f'inc_rec_incident_{st.session_state.incident_record_counter}')[0]
+    assigned_coordinator_id = st.selectbox('Coordinador asignado', options=coordinators, format_func=lambda x: x[1], key=f'inc_rec_assigned_coord_{st.session_state.incident_record_counter}')[0]
+    explanation = st.text_area('Explicación', key=f'inc_rec_explanation_{st.session_state.incident_record_counter}')
+    status = st.selectbox('Status', ['Pendiente', 'En Proceso', 'Solucionado', 'Asignado a Técnicos'], key=f'inc_rec_status_{st.session_state.incident_record_counter}')
+    responsible = st.selectbox('Responsable', ['Bodega', 'Verificador'], key=f'inc_rec_responsible_{st.session_state.incident_record_counter}')
     if st.button('Guardar Registro de Incidencia'):
         if all([date, registering_coordinator_id, warehouse_id, causing_verifier_id, incident_id, assigned_coordinator_id, status, responsible]):
             insert_incident_record(date, registering_coordinator_id, warehouse_id, causing_verifier_id, incident_id, assigned_coordinator_id, explanation, status, responsible)
             st.success('Registro de incidencia guardado exitosamente.')
+            # Incrementar contador para limpiar formulario
+            st.session_state.incident_record_counter += 1
+            st.rerun()
         else:
             st.error('Por favor, complete todos los campos obligatorios.')
 
