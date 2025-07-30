@@ -34,15 +34,15 @@ def insert_warehouse(name, nif, zone):
     conn.commit()
     conn.close()
 
-def load_csv_to_verifiers(csv_path):
-    df = pd.read_csv(csv_path)
+def load_csv_to_verifiers(csv_file, sep=','):
+    df = pd.read_csv(csv_file, sep=sep)
     conn = get_db_connection()
     for _, row in df.iterrows():
         insert_verifier(row['name'], row['surnames'], row.get('phone', ''), row.get('zone', ''))
     conn.close()
 
-def load_csv_to_warehouses(csv_path):
-    df = pd.read_csv(csv_path)
+def load_csv_to_warehouses(csv_file, sep=','):
+    df = pd.read_csv(uploaded_file, sep=separator, encoding='latin1')
     conn = get_db_connection()
     for _, row in df.iterrows():
         insert_warehouse(row['name'], row['nif'], row.get('zone', ''))

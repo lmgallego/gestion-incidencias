@@ -66,14 +66,27 @@ def warehouse_form():
 
 def csv_upload(section):
     st.subheader(f'Carga de {section} desde CSV')
-    uploaded_file = st.file_uploader(f'Seleccione CSV para {section}', type='csv')
-    if uploaded_file is not None:
-        if st.button('Cargar CSV'):
-            if section == 'Verificadores':
-                load_csv_to_verifiers(uploaded_file)
-            elif section == 'Bodegas':
-                load_csv_to_warehouses(uploaded_file)
-            st.success(f'{section} cargados exitosamente desde CSV.')
+    with st.form(key=f'csv_upload_{section}', clear_on_submit=True):
+        uploaded_file = st.file_uploader(f'Seleccione CSV para {section}', type='csv')
+        separator = st.selectbox('Separador del CSV', [',', ';'], index=0)
+        submit = st.form_submit_button('Cargar CSV')
+        if submit and uploaded_file is not None:
+            try:
+                if section == 'Verificadores':
+                    df = pd.read_csv(uploaded_file, sep=separator, encoding='latin1')
+                    required_columns = ['name', 'surnames']
+                    if not all(col in df.columns for col in required_columns):
+                        raise ValueError(f'El CSV debe contener las columnas: {', '.join(required_columns)}')
+                    load_csv_to_verifiers(uploaded_file, sep=separator)
+                elif section == 'Bodegas':
+                    df = pd.read_csv(uploaded_file, sep=separator, encoding='latin1')
+                    required_columns = ['name', 'nif']
+                    if not all(col in df.columns for col in required_columns):
+                        raise ValueError(f'El CSV debe contener las columnas: {', '.join(required_columns)}')
+                    load_csv_to_warehouses(uploaded_file, sep=separator)
+                st.success(f'{section} cargados exitosamente desde CSV.')
+            except Exception as e:
+                st.error(f'Error al cargar el CSV: {str(e)}')
 
 def incident_form():
     st.subheader('Alta de Incidencia')
