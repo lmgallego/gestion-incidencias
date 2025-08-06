@@ -53,3 +53,10 @@ CREATE TABLE IF NOT EXISTS incident_actions (
     FOREIGN KEY (incident_record_id) REFERENCES incident_records(id),
     FOREIGN KEY (performed_by) REFERENCES coordinators(id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_warehouses_zone ON warehouses(zone);
+CREATE INDEX IF NOT EXISTS idx_verifiers_zone ON verifiers(zone);
+CREATE INDEX IF NOT EXISTS idx_incident_records_status ON incident_records(status);
+CREATE INDEX IF NOT EXISTS idx_incident_records_warehouse_id ON incident_records(warehouse_id);
+CREATE INDEX IF NOT EXISTS idx_incident_records_causing_verifier_id ON incident_records(causing_verifier_id);
+CREATE INDEX IF NOT EXISTS idx_incident_records_incident_id ON incident_records(incident_id);

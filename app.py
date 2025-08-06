@@ -1,9 +1,57 @@
 import streamlit as st
+st.set_page_config(layout="wide", page_title="Gestión de Incidencias")
+st.markdown("""
+    <style>
+        .main {max-width: 100%;}
+        @media (max-width: 768px) {
+            .main {padding: 0 10px;}
+            .stButton > button {width: 100%;}
+        }
+        section[data-testid="stSidebar"] {
+            background-color: #f5f5f5 !important;
+            font-size: 0.7rem !important;
+        }
+        section[data-testid="stSidebar"] * {
+            color: #000000 !important;
+        }
+        section[data-testid="stSidebar"] .block-container {
+            background-color: #f5f5f5 !important;
+        }
+        section[data-testid="stSidebar"] button[kind="primary"] {
+            background-color: #333333 !important;
+            color: #FFFFFF !important;
+        }
+        section[data-testid="stSidebar"] button[kind="secondary"] {
+            background-color: #333333 !important;
+            color: #FFFFFF !important;
+        }
+        /* For option menu */
+        section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] .row-widget {
+            background-color: #f5f5f5 !important;
+            color: #000000 !important;
+            font-size: 0.7rem !important;
+        }
+        section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] .row-widget button {
+            background-color: #333333 !important;
+            color: #FFFFFF !important;
+        }
+        section[data-testid="stSidebar"] a.nav-link {
+            background-color: #f5f5f5 !important;
+            color: #000000 !important;
+        }
+        section[data-testid="stSidebar"] a.nav-link.active {
+            background-color: #D3D3D3 !important;
+            color: #000000 !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 from streamlit_option_menu import option_menu
 from utils.database import init_db
 from components.forms import coordinator_form, verifier_form, warehouse_form, csv_upload, incident_form, incident_record_form, manage_incident_actions_form
 from components.analytics import analytics_incidents, analytics_verifiers, analytics_warehouses
 from components.delete import delete_test_data_form
+import hashlib
 
 # Inicializar la base de datos
 init_db()
@@ -17,22 +65,30 @@ if not st.session_state.logged_in:
     username = st.text_input("Usuario")
     password = st.text_input("Contraseña", type="password")
     if st.button("Entrar"):
-        if username == "coordinador" and password == "Cava1234!":
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        stored_hash = hashlib.sha256("Cava1234!".encode()).hexdigest()
+        if username == "coordinador" and hashed_password == stored_hash:
             st.session_state.logged_in = True
-            st.rerun()  # Updated from experimental_rerun
+            st.session_state.role = "coordinador"
+            st.rerun()
+        elif username == "admin" and hashed_password == stored_hash:
+            st.session_state.logged_in = True
+            st.session_state.role = "admin"
+            st.rerun()
         else:
             st.error("Usuario o contraseña incorrectos.")
 else:
-    # Menú principal
+    role = st.session_state.get('role', 'coordinador')
     with st.sidebar:
+        main_options = ["Altas", "Incidencias", "Consultas y Analítica", "Administración"]
+        icons = ["plus-circle", "exclamation-triangle", "bar-chart-line", "gear"]
         main_selected = option_menu(
             menu_title="Menú Principal",
-            options=["Altas", "Incidencias", "Consultas y Analítica", "Administración"],
-            icons=["plus-circle", "exclamation-triangle", "bar-chart-line"],
+            options=main_options,
+            icons=icons,
             menu_icon="cast",
             default_index=0,
         )
-
     if main_selected == "Altas":
         with st.sidebar:
             sub_selected = option_menu(
